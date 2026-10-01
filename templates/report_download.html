@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>HireNext Performance Report</title>
+    <style>
+        :root {
+            --ink: #1B2333;
+            --muted: #6B7488;
+            --line: #E2E5EC;
+            --paper: #FFFFFF;
+            --bg: #F4F5F8;
+            --navy: #2F3B7A;
+            --good: #1F9D63;
+            --mid: #B98900;
+            --weak: #D64545;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: var(--ink);
+            background: var(--bg);
+            margin: 0;
+            line-height: 1.55;
+        }
+
+        .page {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 48px 32px 64px;
+        }
+
+        .masthead {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 3px solid var(--navy);
+            padding-bottom: 20px;
+            margin-bottom: 28px;
+        }
+
+        .masthead h1 {
+            margin: 0 0 6px;
+            font-size: 24px;
+            color: var(--navy);
+            letter-spacing: -0.01em;
+        }
+
+        .masthead .meta {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .score-badge {
+            text-align: center;
+            min-width: 96px;
+        }
+
+        .score-badge .num {
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--navy);
+            line-height: 1;
+        }
+
+        .score-badge .lbl {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: var(--navy);
+            margin: 32px 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title .tag {
+            font-size: 11px;
+            font-weight: 700;
+            background: #E9EBF7;
+            color: var(--navy);
+            padding: 3px 9px;
+            border-radius: 20px;
+        }
+
+        .card {
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 22px 24px;
+            margin-bottom: 20px;
+            break-inside: avoid;
+        }
+
+        .card>h2 {
+            margin: 0 0 16px;
+            font-size: 16px;
+            color: var(--navy);
+        }
+
+        .metric {
+            margin-bottom: 14px;
+        }
+
+        .metric:last-child {
+            margin-bottom: 0;
+        }
+
+        .metric-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13.5px;
+            margin-bottom: 5px;
+        }
+
+        .metric-top .val {
+            font-weight: 700;
+        }
+
+        .bar-track {
+            height: 7px;
+            border-radius: 4px;
+            background: #EBEDF2;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        .fill-good {
+            background: var(--good);
+        }
+
+        .fill-mid {
+            background: var(--mid);
+        }
+
+        .fill-weak {
+            background: var(--weak);
+        }
+
+        .scale-note {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .col-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 10px;
+        }
+
+        .col-title.strength {
+            color: var(--good);
+        }
+
+        .col-title.focus {
+            color: var(--weak);
+        }
+
+        .pill-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13.5px;
+            padding: 7px 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .pill-row:last-child {
+            border-bottom: none;
+        }
+
+        .qcard .qhead {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 10px;
+        }
+
+        .qcard .qhead h3 {
+            margin: 0;
+            font-size: 15px;
+            color: var(--ink);
+        }
+
+        .qcard .qscore {
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .answer-block {
+            background: #F7F8FB;
+            border-left: 3px solid var(--navy);
+            border-radius: 4px;
+            padding: 10px 14px;
+            font-size: 13.5px;
+            margin-bottom: 16px;
+            white-space: pre-wrap;
+        }
+
+        .answer-block .lbl {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .criteria-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .crit-row {
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 10px 14px;
+        }
+
+        .crit-row .crit-head {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .crit-row .bar-track {
+            margin-bottom: 8px;
+        }
+
+        .crit-row p {
+            margin: 4px 0 0;
+            font-size: 12.5px;
+            color: var(--muted);
+        }
+
+        .crit-row p b {
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        .flag-note {
+            font-size: 12.5px;
+            color: var(--weak);
+            background: #FCEEEE;
+            border: 1px solid #F3D0D0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+        }
+
+        .test-row {
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .test-row .test-head {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .test-row .pass {
+            color: var(--good);
+        }
+
+        .test-row .fail {
+            color: var(--weak);
+        }
+
+        .test-row .io {
+            color: var(--muted);
+            font-size: 12.5px;
+        }
+
+        pre.code-block {
+            background: #14192B;
+            color: #E4E7F1;
+            border-radius: 6px;
+            padding: 14px 16px;
+            font-size: 12.5px;
+            overflow-x: auto;
+            margin: 12px 0 0;
+        }
+
+        .disclaimer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 32px;
+        }
+
+        @media print {
+            body {
+                background: var(--paper);
+            }
+
+            .page {
+                padding: 10mm 6mm;
+                max-width: none;
+            }
+
+            .card {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+
+        <div class="masthead">
+            <div>
+                <h1>HireNext Performance Report</h1>
+                <div class="meta">
+                    Candidate: {{ (report.candidate if report else "Candidate") }}
+                    &nbsp;&middot;&nbsp; Generated:
+                    {{ report.created_at if report else coding.created_at }}
+                </div>
+            </div>
+            <div class="score-badge">
+                {% if report and coding %}
+                {% set overall = ((report.final_score + coding.score) / 2) | round | int %}
+                {% elif report %}
+                {% set overall = report.final_score %}
+                {% else %}
+                {% set overall = coding.score %}
+                {% endif %}
+                <div class="num">{{ overall }}</div>
+                <div class="lbl">OVERALL / 100</div>
+            </div>
+        </div>
+
+        {% if report and report.unscored %}
+        <div class="flag-note">
+            {{ report.unscored }} interview answer(s) could not be scored by the evaluator and are excluded from
+            the averages below.
+        </div>
+        {% endif %}
+
+        {% if report %}
+        <div class="section-title"><span class="tag">AI INTERVIEW ROUND</span></div>
+
+        <div class="card">
+            <h2>Performance by criterion</h2>
+            {% for key, label in report.criteria.items() %}
+            {% set s = report.averages[key] %}
+            <div class="metric">
+                <div class="metric-top">
+                    <span>{{ label }}</span>
+                    <span class="val">{{ s }}/100</span>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill {{ 'fill-good' if s >= 70 else ('fill-mid' if s >= 40 else 'fill-weak') }}"
+                       ></div>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="scale-note">Scale: 0 = not demonstrated &nbsp;&middot;&nbsp; 50 = partial &nbsp;&middot;&nbsp;
+                100 = excellent</div>
+        </div>
+
+        <div class="card">
+            <div class="cols">
+                <div>
+                    <div class="col-title strength">Strengths</div>
+                    {% for item in report.strengths %}
+                    <div class="pill-row"><span>{{ item.criterion }}</span><span><b>{{ item.score }}</b>/100</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div>
+                    <div class="col-title focus">Focus areas</div>
+                    {% for item in report.improvements %}
+                    <div class="pill-row"><span>{{ item.criterion }}</span><span><b>{{ item.score }}</b>/100</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin:24px 0 12px;">Answer-by-answer evidence
+            and actions</div>
+
+        {% for row in report.details %}
+        <div class="card qcard">
+            <div class="qhead">
+                <h3>Question {{ loop.index }}: {{ row.question }}</h3>
+                <span class="qscore">{{ row.overall }}/100</span>
+            </div>
+
+            <div class="answer-block">
+                <span class="lbl">Candidate's answer</span>
+                {{ row.answer or 'No answer provided' }}
+            </div>
+
+            {% if row.note %}
+            <div class="flag-note">{{ row.note }}</div>
+            {% endif %}
+
+            <div class="criteria-grid">
+                {% for key, label in report.criteria.items() %}
+                {% set s = row[key].score %}
+                <div class="crit-row">
+                    <div class="crit-head">
+                        <span>{{ label }}</span>
+                        <span>{{ s }}/100</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill {{ 'fill-good' if s >= 70 else ('fill-mid' if s >= 40 else 'fill-weak') }}"
+                            ;></div>
+                    </div>
+                    <p><b>Evidence:</b> {{ row[key].evidence }}</p>
+                    <p><b>Next step:</b> {{ row[key].improvement }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if coding %}
+        <div class="section-title"><span class="tag">MOCK CODING ROUND</span></div>
+
+        <div class="card">
+            <div class="qhead">
+                <h3>{{ coding.title }} &nbsp;<span style="color:var(--muted);font-weight:400;">({{ coding.language
+                        }})</span></h3>
+                <span class="qscore">{{ coding.score }}/100</span>
+            </div>
+            <p style="font-size:13.5px;color:var(--muted);margin:0 0 14px;">{{ coding.problem }}</p>
+            <div class="metric">
+                <div class="metric-top">
+                    <span>Test cases passed</span>
+                    <span class="val">{{ coding.passed_count }}/{{ coding.total }}</span>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill {{ 'fill-good' if coding.score >= 70 else ('fill-mid' if coding.score >= 40 else 'fill-weak') }}"
+                        ></div>
+                </div>
+            </div>
+
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);margin:18px 0 10px;">
+                Test case results</div>
+            {% for r in coding.results %}
+            <div class="test-row">
+                <div class="test-head">
+                    <span>Test {{ loop.index }}</span>
+                    <span class="{{ 'pass' if r.passed else 'fail' }}">{{ 'Passed' if r.passed else 'Failed' }}</span>
+                </div>
+                <div class="io">Input: {{ r.input }} &nbsp;|&nbsp; Expected: {{ r.expected }} &nbsp;|&nbsp; Got: {{
+                    r.got }}</div>
+            </div>
+            {% endfor %}
+
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);margin:18px 0 6px;">
+                Submitted code</div>
+            <pre class="code-block">{{ coding.code }}</pre>
+        </div>
+        {% endif %}
+
+        <p class="disclaimer">Scores are AI-generated practice feedback based on the submitted answers and the
+            rubric shown above.</p>
+
+    </div>
+</body>
+
+</html>

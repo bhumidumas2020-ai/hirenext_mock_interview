@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HireNext AI interview and coding practice platform.">
+  <title>{% block title %}HireNext{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app-shell">
+        <aside class="sidebar" aria-label="Primary navigation">
+      <a class="logo" href="/dashboard" aria-label="HireNext dashboard">
+        <img src="{{ url_for('static', filename='logo.png.png') }}" alt="" class="logo-img">
+        <span class="logo-text">Hire<span>Next</span></span>
+      </a>
+
+      <div class="nav-label" style="margin-top:18px;">ACCOUNT</div>
+      {% if session.get('user_id') %}
+      <a class="nav-item" href="/logout"><span class="nav-icon">🚪</span><span>Logout</span></a>
+      {% else %}
+      <a class="nav-item {{ 'active' if active=='login' }}" href="/login"><span class="nav-icon">🔑</span><span>Login</span></a>
+      <a class="nav-item {{ 'active' if active=='register' }}" href="/register"><span class="nav-icon">📝</span><span>Register</span></a>
+
+
+      {% endif %}
+
+      <div class="nav-label">PRACTICE</div>
+      <a class="nav-item {{ 'active' if active=='resume' }}" href="/resume-analyser"><span class="nav-icon">📄</span><span>Resume Analyser</span></a>
+      <a class="nav-item {{ 'active' if active=='interview' }}" href="/ai-interview"><span class="nav-icon">🎙️</span><span>AI Interview</span></a>
+      <a class="nav-item {{ 'active' if active=='eval' }}" href="/answer-evaluation"><span class="nav-icon">📊</span><span>Evaluation</span></a>
+      <a class="nav-item {{ 'active' if active=='coding' }}" href="/mock-coding"><span class="nav-icon">💻</span><span>Mock Coding</span></a>
+      <a class="nav-item {{ 'active' if active=='dashboard' }}" href="/dashboard"><span class="nav-icon">📈</span><span>Dashboard</span></a>
+
+      
+      <div class="sidebar-footer">AI Powered Mock Interview</div>
+    </aside>
+    <main class="main">{% block content %}{% endblock %}</main>
+  </div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

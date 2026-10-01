@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · HireNext{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <div class="page-title">Dashboard</div>
+    <div class="page-sub">Track your progress and improve every day</div>
+  </div>
+</div>
+
+<div class="card" id="performance-report" style="margin-top:20px;display:none;">
+  <div class="page-header" style="margin-bottom:14px;">
+    <div><div class="section-label">LATEST INTERVIEW REPORT</div><div id="report-date" style="color:var(--muted);font-size:13px;"></div></div>
+    <a class="btn" href="/report/download">Download full report</a>
+  </div>
+  <div id="report-score" style="font-size:22px;font-weight:700;margin-bottom:12px;"></div>
+  <div class="eval-grid">
+    <div><b>Strengths</b><div id="report-strengths"></div></div>
+    <div><b>Focus areas</b><div id="report-improvements"></div></div>
+  </div>
+  <div id="report-metrics" style="margin-top:12px;"></div>
+</div>
+
+<!-- TOP STAT BOXES -->
+<div class="stat-grid" id="stat-grid">
+  <!-- filled in by JavaScript below -->
+</div>
+
+<div class="eval-grid">
+  <!-- LEFT: overall score ring -->
+  <div class="card score-card" style="flex:0 0 260px;">
+    <div class="section-label">OVERALL PERFORMANCE</div>
+    <div class="ring">
+      <svg width="150" height="150">
+        <circle cx="75" cy="75" r="62" stroke="var(--indigo-light)" stroke-width="12" fill="none"/>
+        <circle id="ring-fill" cx="75" cy="75" r="62" stroke="var(--indigo)" stroke-width="12" fill="none"
+                stroke-dasharray="389" stroke-dashoffset="389" stroke-linecap="round"/>
+      </svg>
+      <div class="ring-label"><div class="ring-pct" id="ring-pct">0%</div><div class="ring-tag" id="ring-tag">Score</div></div>
+    </div>
+    <div style="font-size:12.5px;color:var(--muted);margin-top:6px;">Keep up the great work!</div>
+  </div>
+
+  <!-- RIGHT: AI tips + recent activity -->
+  <div class="breakdown">
+    <div class="card">
+      <div class="section-label">AI IMPROVEMENT TIPS</div>
+      <div id="tips-list"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;">RECENT ACTIVITY</div>
+      <div id="activity-list">No activity yet — try an interview or coding round!</div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ---------------------------------------------------------------------
+// Module 6 front-end logic.
+// Just makes ONE call to /api/dashboard (defined in modules/dashboard.py)
+// and fills the numbers into the page.
+// ---------------------------------------------------------------------
+async function loadDashboard(){
+  const res = await fetch('/api/dashboard');
+  const data = await res.json();
+
+  if (data.latest_report) {
+    const report = data.latest_report;
+    document.getElementById('performance-report').style.display = 'block';
+    document.getElementById('report-date').textContent = `Saved ${report.created_at}`;
+    document.getElementById('report-score').textContent = `Interview performance: ${report.final_score}/100`;
+    const safe = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    document.getElementById('report-strengths').innerHTML = report.strengths.map(x => `<div class="feedback-item">${safe(x.criterion)} — ${x.score}/100</div>`).join('');
+    document.getElementById('report-improvements').innerHTML = report.improvements.map(x => `<div class="feedback-item">${safe(x.criterion)} — ${x.score}/100</div>`).join('');
+    document.getElementById('report-metrics').innerHTML = Object.entries(report.averages).map(([key, score]) => `<div class="metric-row"><div class="metric-top"><span>${safe(report.criteria[key])}</span><span class="val">${score}/100</span></div><div class="bar-bg"><div class="bar-fill" style="width:${score}%"></div></div></div>`).join('');
+  }
+
+  // Top stat boxes
+  document.getElementById('stat-grid').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${data.interviews_taken}</div><div class="stat-label">Interviews Taken</div></div>
+    <div class="stat-box"><div class="stat-num">${data.coding_rounds}</div><div class="stat-label">Coding Rounds</div></div>
+    <div class="stat-box"><div class="stat-num">${data.overall_score}%</div><div class="stat-label">Overall Score</div></div>
+    <div class="stat-box"><div class="stat-num">${data.avg_score}%</div><div class="stat-label">Avg Score</div></div>
+  `;
+
+  // Score ring
+  document.getElementById('ring-pct').textContent = data.overall_score + '%';
+  const offset = 389 - (389 * data.overall_score / 100);
+  document.getElementById('ring-fill').setAttribute('stroke-dashoffset', offset);
+  document.getElementById('ring-tag').textContent =
+    data.overall_score >= 80 ? 'Excellent' : data.overall_score >= 50 ? 'Good' : 'Needs Work';
+
+  // Tips
+  document.getElementById('tips-list').innerHTML =
+    data.tips.map(t => `<div class="feedback-item">💡 ${t}</div>`).join('');
+
+  // Recent activity
+  if (data.recent_activity.length > 0) {
+    document.getElementById('activity-list').innerHTML = data.recent_activity.map(a => `
+      <div class="feedback-item"><b>${a.title}</b> — ${a.score}%<br>
+      <span style="color:var(--muted);font-size:12px;">${a.time}</span></div>`).join('');
+  }
+}
+
+loadDashboard();
+</script>
+{% endblock %}

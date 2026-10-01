@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Answer Evaluation · HireNext{% endblock %}
+{% block content %}
+<div class="page-header"><div><div class="page-title">Answer Evaluation</div><div class="page-sub">Detailed interview performance report</div></div></div>
+<div id="evaluation-status" class="card">Preparing your detailed evaluation…</div>
+<div id="evaluation-results" style="display:none;">
+  <div class="card eval-grid">
+    <div class="score-card"><div class="section-label">OVERALL SCORE</div><div class="ring"><svg width="150" height="150"><circle cx="75" cy="75" r="62" stroke="var(--indigo-light)" stroke-width="12" fill="none"/><circle id="ring-fill" cx="75" cy="75" r="62" stroke="var(--indigo)" stroke-width="12" fill="none" stroke-dasharray="389" stroke-dashoffset="389" stroke-linecap="round"/></svg><div class="ring-label"><div class="ring-pct" id="ring-pct">0%</div><div class="ring-tag">Score</div></div></div></div>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+  <div class="card"><div class="section-label">OVERALL STRENGTHS & FOCUS AREAS</div><div class="eval-grid"><div><b>Strongest areas</b><div id="strengths"></div></div><div><b>Areas to improve</b><div id="improvements"></div></div></div></div>
+  <div class="card"><div class="section-label">QUESTION-BY-QUESTION FEEDBACK</div><div id="feedback-list"></div></div>
+  <a class="btn" href="/report/download">Download full report</a>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function runEvaluation(){
+  const status = document.getElementById('evaluation-status');
+  try {
+    const res = await fetch('/api/evaluate', {method:'POST'});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Evaluation could not be completed.');
+    status.style.display = 'none'; document.getElementById('evaluation-results').style.display = 'block';
+    document.getElementById('ring-pct').textContent = data.final_score + '%';
+    document.getElementById('ring-fill').setAttribute('stroke-dashoffset', 389 - (389 * data.final_score / 100));
+    document.getElementById('breakdown').innerHTML = Object.entries(data.averages).map(([key, score]) => `<div class="metric-row"><div class="metric-top"><span>${esc(data.criteria[key])}</span><span class="val">${score}/100</span></div><div class="bar-bg"><div class="bar-fill" style="width:${score}%"></div></div></div>`).join('');
+    const list = rows => rows.map(x => `<div class="feedback-item"><b>${esc(x.criterion)}</b> — ${x.score}/100</div>`).join('');
+    document.getElementById('strengths').innerHTML = list(data.strengths);
+    document.getElementById('improvements').innerHTML = list(data.improvements);
+    document.getElementById('feedback-list').innerHTML = data.details.map((row, i) => `<div class="feedback-item"><h3>Question ${i+1}: ${esc(row.question)}</h3><p><b>Your answer:</b> ${esc(row.answer || 'No answer provided')}</p><b>Overall: ${row.overall}/100</b>${Object.entries(data.criteria).map(([key, label]) => `<div style="margin-top:12px"><b>${esc(label)}: ${row[key].score}/100</b><br><span><b>Evidence:</b> ${esc(row[key].evidence)}</span><br><span><b>Next step:</b> ${esc(row[key].improvement)}</span></div>`).join('')}</div>`).join('');
+  } catch (error) { status.textContent = error.message; }
+}
+runEvaluation();
+</script>
+{% endblock %}

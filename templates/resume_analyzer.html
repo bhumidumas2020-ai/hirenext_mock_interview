@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Resume Analyser - HireNext{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Resume Analyser</div>
+    <div class="page-sub">AI feedback and Q&A, grounded in your uploaded resume (RAG).</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-label">FULL ANALYSIS</div>
+  <button class="btn btn-primary" id="analyzeBtn">Analyse My Resume</button>
+  <div id="analysisResult" style="margin-top:16px;"></div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById("analyzeBtn").onclick = async () => {
+  const box = document.getElementById("analysisResult");
+  box.innerHTML = "<div class='empty-state'>Analysing...</div>";
+  const res = await fetch("/api/resume/analyze", { method: "POST" });
+  const data = await res.json();
+  if (data.error) { box.innerHTML = `<div class="feedback-item">${data.error}</div>`; return; }
+  box.innerHTML = `
+    <div class="feedback-item"><b>Skills:</b> ${data.skills.join(", ")}</div>
+    <div class="feedback-item"><b>Strengths:</b> ${data.strengths.join(", ")}</div>
+    <div class="feedback-item"><b>Improvements:</b> ${data.improvements.join(", ")}</div>`;
+};
+
+</script>
+{% endblock %}

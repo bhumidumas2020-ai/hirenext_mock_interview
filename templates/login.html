@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Login - HireNext{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Welcome back</div>
+    <div class="page-sub">Log in to continue practicing.</div>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="card" style="color:var(--black);background:var(--green-bg);">
+      {% for m in messages %}<div>{{ m }}</div>{% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="card">
+  <form method="POST">
+    <div class="section-label">EMAIL</div>
+    <input class="input" type="email" name="email" required>
+    <div class="section-label" style="margin-top:16px;">PASSWORD</div>
+    <input class="input" type="password" name="password" required>
+    <div class="nav-buttons" style="margin-top:22px;">
+      <a class="btn btn-outline" href="{{ url_for('user_management.register') }}">Need an account?</a>
+      <button class="btn btn-primary" type="submit">Log In</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

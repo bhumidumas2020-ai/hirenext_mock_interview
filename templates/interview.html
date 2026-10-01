@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}AI Mock Interview · HireNext{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <div class="page-title">AI Mock Interview</div>
+    <div class="page-sub" id="progress-text">Loading questions…</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="q-badge" id="q-badge">Question - / -</div>
+  <div class="q-text" id="q-text">Loading…</div>
+</div>
+
+<div class="card">
+  <div class="section-label">VOICE ANSWER</div>
+  <div class="mic-zone">
+    <div class="mic-btn" id="mic-btn" onclick="toggleMic()">
+      <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+    </div>
+    <div class="mic-hint" id="mic-hint">Tap the mic to start speaking</div>
+    <div class="transcript-box" id="transcript">Your transcribed answer will appear here…</div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <div></div>
+  <button class="btn btn-primary" onclick="submitAnswer()">Next →</button>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentTranscript = "";
+let recognizing = false;
+let recognition;
+
+if ('webkitSpeechRecognition' in window) {
+  recognition = new webkitSpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.onresult = (e) => {
+    let text = "";
+    for (let i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+    currentTranscript = text;
+    document.getElementById('transcript').textContent = text;
+  };
+}
+
+function toggleMic(){
+  if (!recognition) { alert("Speech recognition not supported — use Chrome."); return; }
+  const btn = document.getElementById('mic-btn');
+  const hint = document.getElementById('mic-hint');
+  recognizing = !recognizing;
+  if (recognizing) {
+    currentTranscript = "";
+    recognition.start();
+    btn.classList.add('listening');
+    hint.textContent = "Listening… tap again to stop";
+  } else {
+    recognition.stop();
+    btn.classList.remove('listening');
+    hint.textContent = "Tap the mic to start speaking";
+  }
+}
+
+async function startInterview(){
+  const res = await fetch('/api/start', { method: 'POST' });
+  const data = await res.json();
+  showQuestion(data);
+}
+
+function showQuestion(data){
+  document.getElementById('q-badge').textContent = `Question ${data.index} / ${data.total}`;
+  document.getElementById('q-text').textContent = data.question;
+  document.getElementById('progress-text').textContent = `Practice with AI — Question ${data.index} of ${data.total}`;
+  document.getElementById('transcript').textContent = "Your transcribed answer will appear here…";
+  currentTranscript = "";
+}
+
+async function submitAnswer(){
+  if (!currentTranscript.trim()) { alert("Please answer using the mic first."); return; }
+  const res = await fetch('/api/answer', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ answer: currentTranscript })
+  });
+  const data = await res.json();
+  if (data.done) {
+    window.location.href = "/answer-evaluation";
+  } else {
+    showQuestion(data);
+  }
+}
+
+startInterview();
+</script>
+{% endblock %}
